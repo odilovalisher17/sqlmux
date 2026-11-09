@@ -15,6 +15,7 @@ All notable changes to sqlmux are listed here. The format follows
 
 ### Changed
 
+- Zebra rows start on the first row, as DBeaver's (first darker, second lighter), and show with `[ui] transparent = true` too: the default theme's `row_alt` is its background, which transparency left unpainted, so a shade darker than the panes is used there.
 - The connection form's engine is a select: its field shows the engine with `▾`, and while it has the focus a list of every engine, with its logo, opens under it; `↓` / `↑` (or `j` / `k`) pick as they go, `esc` closes the list, `↵` still saves.
 - The engines' icons are their real logos in their own colors, whatever the theme: SQL Server, Oracle and ClickHouse get theirs (Nerd Fonts 3.3 or later), and SQL Server no longer shows PostgreSQL's elephant.
 - In kitty and Ghostty (outside tmux), the engines' icons are DBeaver's full-color logos, drawn as images. `icons = "images"` forces them, `icons = "nerd"` turns them off.
