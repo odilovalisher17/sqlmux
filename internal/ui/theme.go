@@ -174,6 +174,17 @@ func ParseTheme(data string, icons *Icons) (th *Theme, ic *Icons, unknown []stri
 	return th, ic, unknown, nil
 }
 
+// zebra is the grid's alternate rows' background (§7.6): row_alt, unless a
+// transparent frame would leave it unpainted, as it would the default theme's,
+// whose row_alt is its bg; then a shade darker than the panes, which the
+// terminal draws solid among the rows it shows through.
+func (th *Theme) zebra(transparent bool) color.Color {
+	if transparent && th.background(th.RowAlt) {
+		return mix(th.PaneBg, color.Black, 0.3)
+	}
+	return th.RowAlt
+}
+
 // background is whether c is none, or one of the backgrounds a transparent
 // frame leaves unpainted: bg, pane_bg and gap (§7.3).
 func (th *Theme) background(c color.Color) bool {

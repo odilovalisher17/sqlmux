@@ -533,8 +533,8 @@ func (g Grid) Draw(f *Frame, area uv.Rectangle) uv.Position {
 		switch {
 		case r == cr, f.Over(uv.Rect(area.Min.X, y, area.Dx(), 1)): // the current row, and the one under the pointer (G-06)
 			bg = th.Row
-		case (r+1)%2 == 0: // even row numbers: zebra
-			bg = th.RowAlt
+		case r%2 == 0: // odd row numbers, the first among them: zebra, as DBeaver's
+			bg = th.zebra(f.Transparent)
 		}
 		f.Fill(uv.Rect(area.Min.X, y, area.Dx(), 1), uv.Style{Bg: bg})
 		label := v.label(r)

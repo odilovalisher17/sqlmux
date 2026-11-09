@@ -107,9 +107,17 @@ func TestGridColors(t *testing.T) {
 	g := testGrid()
 	g.Draw(f, uv.Rect(0, 0, 60, 7))
 	bg := func(x, y int) any { return f.Buf.CellAt(x, y).Style.Bg }
-	// data rows start at y=2; row index 1 (row number 2) is even: zebra
-	if bg(0, 2) != th.PaneBg || bg(0, 3) != th.RowAlt || bg(0, 5) != th.RowAlt {
-		t.Errorf("zebra: %v %v %v", bg(0, 2), bg(0, 3), bg(0, 5))
+	// data rows start at y=2; row index 0 (row number 1) is odd: zebra
+	if bg(0, 2) != th.RowAlt || bg(0, 3) != th.PaneBg {
+		t.Errorf("zebra: %v %v", bg(0, 2), bg(0, 3))
+	}
+	// transparent, the default theme's row_alt is its bg, which would not be painted: a darker shade is
+	tf := NewFrame(60, 7, th)
+	tf.Transparent = true
+	g.Draw(tf, uv.Rect(0, 0, 60, 7))
+	tf.Unpaint()
+	if z := tf.Buf.CellAt(0, 2).Style.Bg; z == nil || th.background(z) || tf.Buf.CellAt(0, 3).Style.Bg != nil {
+		t.Errorf("transparent zebra: %v, then %v", z, tf.Buf.CellAt(0, 3).Style.Bg)
 	}
 	if bg(0, 4) != th.Row {
 		t.Errorf("current row: %v", bg(0, 4))
