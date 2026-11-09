@@ -259,8 +259,18 @@ func TestNewSessionIsOneEmptyPane(t *testing.T) {
 	a := sized(160, 45, "nerd")
 	_, cmd := a.Update(sessionDialed{name: "1", spec: a.sess.Conns[0].Spec, d: dialed{main: noDB{}, meta: noDB{}, spec: a.sess.Conns[0].Spec}})
 	s := a.sess
-	if m, ok := cmd().(catalogMsg); !ok || m.conn != s.start { // its connections are its own: the tree needs the catalog of this one
-		t.Errorf("the session loads the catalog of its start: %T", cmd())
+	var got []tea.Msg // the catalog's load, with the spinner's tick it starts (§7.8「转圈」)
+	if b, ok := cmd().(tea.BatchMsg); ok {
+		for _, c := range b {
+			if c != nil {
+				got = append(got, c())
+			}
+		}
+	} else {
+		got = append(got, cmd())
+	}
+	if !slices.ContainsFunc(got, func(m tea.Msg) bool { c, ok := m.(catalogMsg); return ok && c.conn == s.start }) { // its connections are its own: the tree needs the catalog of this one
+		t.Errorf("the session loads the catalog of its start: %v", got)
 	}
 	if len(a.sessions) != 2 || s.Name != "1" || len(s.Windows) != 1 {
 		t.Fatalf("%d sessions, attached %q with %d windows", len(a.sessions), s.Name, len(s.Windows))

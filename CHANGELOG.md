@@ -12,6 +12,8 @@ All notable changes to sqlmux are listed here. The format follows
 - **Oracle** (`engine = "oracle"`, `oracle://user@host:1521/SERVICE`), with go-ora, so no Oracle client is needed: the tree of schemas, tables, views, indexes, keys, functions and sequences, the editable grid with one-transaction saves and the manual transaction mode, PL/SQL blocks ended by `/` in the query editor, `DBMS_METADATA` DDL, quick SQL in a read-only transaction. See [Oracle](docs/config.md#oracle).
 - Drag a table from the tree into a query to insert its full name where you drop it, as DBeaver does: `db.schema.table` on PostgreSQL and SQL Server, `catalog.schema.table` on Trino, `schema.table` elsewhere, quoted where needed. A plain click on a table still opens it.
 - The command line opens `sqlserver://`, `oracle://`, `clickhouse://` and `trino://` URLs, as it does `postgres://` and `mysql://`.
+- Hovering a column head shows a tip, as DBeaver does: the column's type, `NOT NULL` or `NULL`, its primary or unique key, the column a foreign key of it points to, its default and an enum's values.
+- A connection reading its schemas, databases or catalogs spins in the tree until they're in, and an open one with nothing yet shows a `Loading…` row under it, as DBeaver does; before, a slow server left it empty with no sign anything was happening.
 
 ### Changed
 

@@ -239,6 +239,7 @@ type Conn struct {
 	Main, Meta *db.Worker // §8.2; nil till connected
 	Addr       string     // shown in the status bar, e.g. ctw@localhost:5432
 	busy       int        // its requests out that C-c cancels (§8.3)
+	loading    int        // its catalog reads out: the tree spins on it, an open node with nothing yet says so (§7.8「转圈」)
 	// tx is where Main's transaction was as its last request ended: 'I'
 	// out of one, 'T' in one, 'E' in one that failed; 0 before any. The
 	// replies bring it: Main may be busy, its lock not to wait on (F5.11).
@@ -261,7 +262,8 @@ type Conn struct {
 	ddl       map[tableID]ddlText    // the palette's previews (F4.2), dropped with cols
 	idx       map[tableID][]db.Index // a table's indexes and keys, read when it opens in the tree (F14.3), dropped with cols
 	keys      map[tableID][]db.Key
-	funcs     []db.Function // every schema's, with the catalog
+	headAsked map[tableID]bool // the tables whose keys a column head's tip asked for (§7.6)
+	funcs     []db.Function    // every schema's, with the catalog
 	// Databases are the server's the user may connect to, with the catalog
 	// (PG; F15.1); dbs the connections to those but the DSN's, made as the
 	// tree opens one, by name.
@@ -533,6 +535,7 @@ func (c *Conn) dropCols() {
 	clear(c.ddl)
 	clear(c.idx)
 	clear(c.keys)
+	clear(c.headAsked)
 }
 
 // newSession is a session's default workspace (§5) over conns, start the

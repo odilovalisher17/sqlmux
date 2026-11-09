@@ -18,7 +18,7 @@ func spinTimer() tea.Cmd { return tea.Tick(spinEvery, func(time.Time) tea.Msg { 
 
 // spinning is whether anything on the screen has the dots: the status bar's
 // busy, a run's placeholder in the result area, a table's row count being
-// counted, a connection being connected in the tree (§7.8「转圈」).
+// counted, a connection being connected in the tree, or its catalog read (§7.8「转圈」).
 func (a *App) spinning() bool {
 	win := a.win()
 	if c := a.conn(); c != nil && c.busy > 0 {
@@ -36,7 +36,7 @@ func (a *App) spinning() bool {
 	}
 	if win.TreeOpen {
 		for _, c := range a.sess.conns() {
-			if c.State == connConnecting {
+			if c.State == connConnecting || c.loading > 0 {
 				return true
 			}
 		}

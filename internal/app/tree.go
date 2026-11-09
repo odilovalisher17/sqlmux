@@ -131,6 +131,7 @@ func (a *App) loadCatalog(c *Conn) tea.Cmd {
 		return tea.Batch(a.loadCommands(c), a.loadKeys(c))
 	}
 	meta, eng, root, name, own := c.Meta, c.eng, c.root().Spec, c.DB, c.Spec.Database == ""
+	c.loading++ // gotCatalog takes it off
 	return func() tea.Msg {
 		ctx := context.Background()
 		all, current, err := eng.Schemas(ctx, meta)
@@ -172,6 +173,7 @@ func (a *App) loadCatalog(c *Conn) tea.Cmd {
 }
 
 func (a *App) gotCatalog(m catalogMsg) tea.Cmd {
+	m.conn.loading = max(m.conn.loading-1, 0)
 	if a.sessionOf(m.conn) == nil { // its session closed meanwhile
 		return nil
 	}
@@ -382,6 +384,10 @@ func (a *App) treeNodes() (ns []node, matches int) {
 	// schemas adds c's schemas and what hangs from them, off levels deeper than a
 	// connection's: its database's are one (F15.1).
 	schemas := func(c *Conn, off int) {
+		if c.loading > 0 && len(c.Schemas) == 0 && len(c.Databases) == 0 { // its first catalog on the way: says so, as DBeaver's Loading… (§7.8「转圈」)
+			add(node{id: "loading:" + c.keyPrefix(), kind: nodeNote, conn: c, TreeNode: ui.TreeNode{Depth: 1 + off, Text: a.icons.Spinner(a.spin) + " " + i18n.T("加载中…"), TextFg: th.Dim}})
+			return
+		}
 		flat := c.flat() // the file is the schema: Tables and Views hang from it (F14.1)
 		depth := func(d int) int { return d - b2i(flat) + off }
 		for _, sc := range c.Schemas {
@@ -510,12 +516,11 @@ func (a *App) treeNodes() (ns []node, matches int) {
 		} else {
 			cn.Note, cn.NoteFg = pickedNote(len(c.Databases), len(c.all.dbs)), th.Dim
 		}
-		switch c.State {
-		case connConnecting:
+		switch {
+		case c.State == connConnecting, c.State == connReady && c.loading > 0: // dialed, or its catalog read
 			cn.Aside = strings.TrimSpace(cn.Aside + " " + a.icons.Spinner(a.spin))
-		case connFailed:
+		case c.State == connFailed:
 			cn.TextFg = th.Error
-		case connIdle, connReady: // the name as it is
 		}
 		if c.down() != nil { // a redial failed: its next request tries again (F8.19)
 			cn.TextFg = th.Error
@@ -554,12 +559,11 @@ func (a *App) treeNodes() (ns []node, matches int) {
 			if !dc.redis() || searching {
 				dn.NoteFg = th.Dim
 			}
-			switch dc.State {
-			case connConnecting:
+			switch {
+			case dc.State == connConnecting, dc.State == connReady && dc.loading > 0:
 				dn.Aside = a.icons.Spinner(a.spin)
-			case connFailed:
+			case dc.State == connFailed:
 				dn.TextFg = th.Error
-			case connIdle, connReady:
 			}
 			if add(dn) {
 				if dc.redis() {

@@ -156,6 +156,7 @@ func (a *App) drawOn(f *ui.Frame) *ui.Frame {
 		v, box, rows := a.completeView(t.comp, at)
 		v.Draw(f, box, rows)
 	}
+	a.drawHeadTip(f)
 	if a.cols != nil {
 		f.Cursor = nil // what is under has not the keys: its own, if it has one, is set below
 		d := a.colsView()
