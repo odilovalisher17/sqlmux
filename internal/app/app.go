@@ -261,7 +261,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	a.plainQueries()
 	a.sess.last = a.conn() // where the focus goes next may name none (§5)
 	a.sess.touch(a.focused().tab())
-	return a, tea.Batch(cmd, a.wantCols(), a.wantDDL(), a.wantPopupDDL(), a.spinStart(), a.keyListCmd())
+	return a, tea.Batch(cmd, a.wantCols(), a.wantDDL(), a.wantPopupDDL(), a.wantHeadKeys(), a.spinStart(), a.keyListCmd())
 }
 
 // stillOver is whether msg changed nothing the last frame shows: a pointer
