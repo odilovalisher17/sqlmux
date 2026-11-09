@@ -239,6 +239,7 @@ type Conn struct {
 	Main, Meta *db.Worker // §8.2; nil till connected
 	Addr       string     // shown in the status bar, e.g. ctw@localhost:5432
 	busy       int        // its requests out that C-c cancels (§8.3)
+	loading    int        // its catalog reads out: the tree spins on it, an open node with nothing yet says so (§7.8「转圈」)
 	// tx is where Main's transaction was as its last request ended: 'I'
 	// out of one, 'T' in one, 'E' in one that failed; 0 before any. The
 	// replies bring it: Main may be busy, its lock not to wait on (F5.11).

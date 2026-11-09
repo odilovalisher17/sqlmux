@@ -171,6 +171,7 @@ var en = map[string]string{
 	"执行":                        "Run",
 	"折叠 / 到上一级":                 "Collapse / up a level",
 	"打开 / 聚焦 / 收起侧栏":            "Open / focus / fold the sidebar",
+	"加载中…":                      "Loading…",
 	"收起侧栏":                      "Fold the sidebar",
 	"按编号跳转":                     "Jump by number",
 	"提交":                        "Commit",
