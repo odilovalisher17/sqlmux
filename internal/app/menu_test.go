@@ -66,11 +66,11 @@ func TestMenuItemsByNode(t *testing.T) {
 		node string
 		want []string
 	}{
-		{"t_user", []string{"打开", "在新 tab 打开", "属性", "删除表…", "加列…", "加索引…", "改名…", "删除列…", "删除索引…"}}, // and the structure changes' (F14.4)
-		{"v_paid", []string{"打开", "在新 tab 打开", "属性", "删除视图…", "改名…"}},
-		{"mv_sum", []string{"打开", "在新 tab 打开", "属性", "删除视图…", "改名…"}},
+		{"t_user", []string{"打开", "在新 tab 打开", "属性", "刷新", "删除表…", "加列…", "加索引…", "改名…", "删除列…", "删除索引…"}}, // and the structure changes' (F14.4)
+		{"v_paid", []string{"打开", "在新 tab 打开", "属性", "刷新", "删除视图…", "改名…"}},
+		{"mv_sum", []string{"打开", "在新 tab 打开", "属性", "刷新", "删除视图…", "改名…"}},
 		{"queries/query_1", []string{"打开", "重命名…", "删除…"}},
-		{"public", nil},
+		{"public", []string{"刷新"}}, // a schema: read again (§7.8「刷新」)
 		{"Tables (14)", nil},
 		{"Queries", nil},
 		{"data", nil},
@@ -441,7 +441,7 @@ func TestMenuRightClickWhileOpen(t *testing.T) {
 	rightClickNode(t, a, "t_user")
 	a.View()
 	rightClickNode(t, a, "t_order")
-	if n, _ := a.treeNode(); a.menu == nil || n.Text != "t_order" || !slices.Equal(menuLabels(a)[:4], []string{"打开", "在新 tab 打开", "属性", "删除表…"}) {
+	if n, _ := a.treeNode(); a.menu == nil || n.Text != "t_order" || !slices.Equal(menuLabels(a)[:5], []string{"打开", "在新 tab 打开", "属性", "刷新", "删除表…"}) {
 		t.Fatalf("on another node: menu %v, cursor %q", a.menu != nil, n.Text)
 	}
 	a.View()

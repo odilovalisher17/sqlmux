@@ -257,7 +257,8 @@ func init() {
 				a.treeFilter()
 			}
 		})},
-		"tree.refresh": {Title: i18n.N("刷新表列表"), Run: func(a *App, _ Args) tea.Cmd { return a.refreshTree() }},
+		"tree.refresh":     {Title: i18n.N("刷新表列表"), Run: func(a *App, _ Args) tea.Cmd { return a.refreshTree() }},
+		"tree.refresh.all": {Title: i18n.N("刷新所有连接"), Run: func(a *App, _ Args) tea.Cmd { return a.refreshAll() }},
 		"table.properties": {Title: i18n.N("表的属性 / 数据"), SQL: true, Run: func(a *App, _ Args) tea.Cmd {
 			if p := a.focused(); dataOf(p) != nil { // its properties, or its rows back
 				return a.showProps(p, dataOf(p).props == "")
@@ -609,6 +610,7 @@ func init() {
 				if t.props != "" { // read anew: its source keeps what it read
 					t.src = newProps(t.conn, t.table, t.props)
 				}
+				t.conn.forgetTable(t.table) // its columns, keys and DDL as they are now: one added, a type changed (as DBeaver's F5)
 				return a.fetch(t, true)
 			})
 		}},

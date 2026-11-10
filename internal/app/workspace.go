@@ -239,6 +239,7 @@ type Conn struct {
 	Main, Meta *db.Worker // §8.2; nil till connected
 	Addr       string     // shown in the status bar, e.g. ctw@localhost:5432
 	busy       int        // its requests out that C-c cancels (§8.3)
+	refreshing int        // its catalog reads a refresh asked for: each says it is done (gotCatalog)
 	loading    int        // its catalog reads out: the tree spins on it, an open node with nothing yet says so (§7.8「转圈」)
 	// tx is where Main's transaction was as its last request ended: 'I'
 	// out of one, 'T' in one, 'E' in one that failed; 0 before any. The
@@ -529,6 +530,18 @@ func (c *Conn) cancel() {
 }
 
 // dropCols forgets the columns fetched: the catalog loads anew (§7.8).
+// forgetTable drops what was read of table t's catalog, to be read again:
+// its columns, their DDL, its indexes and keys (grid.refresh).
+func (c *Conn) forgetTable(t db.Table) {
+	id := idOf(t)
+	delete(c.cols, id)
+	delete(c.colsAsked, id)
+	delete(c.ddl, id)
+	delete(c.idx, id)
+	delete(c.keys, id)
+	delete(c.headAsked, id)
+}
+
 func (c *Conn) dropCols() {
 	clear(c.cols)
 	clear(c.colsAsked)

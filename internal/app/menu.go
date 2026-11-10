@@ -53,6 +53,7 @@ func (a *App) menuItems(n node) []menuItem {
 			{i18n.T("打开"), "open", func() tea.Cmd { return a.treeOpen(false) }},
 			{i18n.T("在新 tab 打开"), "open", func() tea.Cmd { return a.treeOpen(true) }},
 			{i18n.T("属性"), "table", func() tea.Cmd { return a.openProps(n.conn, n.table) }},
+			a.refreshItem(),
 			{drop, "trash", a.dropTable},
 		}
 		return append(items, a.alterItems(n)...)
@@ -69,12 +70,24 @@ func (a *App) menuItems(n node) []menuItem {
 		if n.conn.redis() {
 			return []menuItem{{i18n.T("刷新"), "refresh", func() tea.Cmd { return a.loadKeys(n.conn) }}}
 		}
-		return a.pickItem(n)
+		return append(a.pickItem(n), a.refreshItem())
 	case nodeConn:
-		return append(a.pickItem(n), a.connItems(n.conn)...)
-	case nodeSchema, nodeGroup, nodeColumn, nodeObjects, nodeIndex, nodeKey, nodeFunc, nodeSequence, nodeWorkspace, nodeWindow, nodeTab, nodeQueries, nodeSep, nodeNote: // no menu
+		items := a.pickItem(n)
+		if n.conn.State == connReady {
+			items = append(items, a.refreshItem())
+		}
+		return append(items, a.connItems(n.conn)...)
+	case nodeSchema:
+		return []menuItem{a.refreshItem()}
+	case nodeGroup, nodeColumn, nodeObjects, nodeIndex, nodeKey, nodeFunc, nodeSequence, nodeWorkspace, nodeWindow, nodeTab, nodeQueries, nodeSep, nodeNote: // no menu
 	}
 	return nil
+}
+
+// refreshItem is the menu's refresh: R on the node under the cursor, the
+// menu's node (tree.refresh, as DBeaver's F5).
+func (a *App) refreshItem() menuItem {
+	return menuItem{i18n.T("刷新"), "refresh", func() tea.Cmd { return a.refreshTree() }}
 }
 
 // rightClick opens the menu of the tree node under the pointer, the cursor

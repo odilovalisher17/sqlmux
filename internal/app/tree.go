@@ -178,10 +178,16 @@ func (a *App) gotCatalog(m catalogMsg) tea.Cmd {
 		return nil
 	}
 	if m.err != nil {
+		m.conn.refreshing = max(m.conn.refreshing-1, 0)
 		a.dropPending(m.conn)
 		return a.showToast(i18n.T("%s：%s", m.conn.label(), m.err))
 	}
 	c := m.conn
+	var done tea.Cmd
+	if c.refreshing > 0 { // R, the menu's or the button's: say it is in
+		c.refreshing--
+		done = a.showToast(i18n.T("已刷新 %s", c.label()))
+	}
 	c.Schemas, c.Tables, c.funcs, c.seqs, c.Databases = m.schemas, m.tables, m.funcs, m.seqs, m.dbs
 	c.all = m.all
 	// home stays once set, while there: what Meta's current one is moves
@@ -211,7 +217,7 @@ func (a *App) gotCatalog(m catalogMsg) tea.Cmd {
 			cmds = append(cmds, a.fetchObjects(c, t))
 		}
 	}
-	return tea.Batch(cmds...)
+	return tea.Batch(append(cmds, done)...)
 }
 
 // connNode is connection c's node ID; schemaNode, groupNode and tableNode
@@ -770,8 +776,38 @@ func (a *App) refreshTree() tea.Cmd {
 	if c.State != connReady { // a layout's other session, still connecting (F6.5)
 		return a.notReady(c)
 	}
-	c.dropCols()
-	return a.loadCatalog(c)
+	if n, ok := a.treeNode(); ok && a.focused() == a.win().Tree && n.kind == nodeConn { // the server's: its databases, and each one open under it
+		return a.refreshConns(append([]*Conn{c}, slices.Collect(maps.Values(c.dbs))...))
+	}
+	return a.refreshConns([]*Conn{c})
+}
+
+// refreshConns reads the catalogs of cs again, those connected: what the
+// tables' columns, keys and DDL were is dropped, to be read again as they are
+// wanted; a toast says each is done (gotCatalog).
+func (a *App) refreshConns(cs []*Conn) tea.Cmd {
+	var cmds []tea.Cmd
+	for _, c := range cs {
+		if c.State != connReady {
+			continue
+		}
+		c.dropCols()
+		if c.sql() { // a key-value server's catalog is its keys, which say nothing back (loadCatalog)
+			c.refreshing++
+		}
+		cmds = append(cmds, a.loadCatalog(c))
+	}
+	return tea.Batch(cmds...)
+}
+
+// refreshAll is the tree's refresh button: every connection of the session
+// connected, its databases with it.
+func (a *App) refreshAll() tea.Cmd {
+	cs := a.sess.conns()
+	if !slices.ContainsFunc(cs, func(c *Conn) bool { return c.State == connReady }) {
+		return a.showToast(i18n.T("没有已连接的连接"))
+	}
+	return a.refreshConns(cs)
 }
 
 // treeExpand is l: a closed node opens, an open one hands the cursor to its
