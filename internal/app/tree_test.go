@@ -566,7 +566,7 @@ func TestTreeFilter(t *testing.T) {
 		t.Fatalf("typing: mode %v\n%s", a.mode(), treeTexts(a))
 	}
 	f := a.render()
-	if row := strings.Split(f.String(), "\n")[1]; !strings.Contains(row, " tor") || !strings.Contains(row, " 2/15 "+a.icons.RowAdd.Text+" │") {
+	if row := strings.Split(f.String(), "\n")[1]; !strings.Contains(row, " tor") || !strings.Contains(row, " 2/15 "+a.icons.Refresh.Text+" "+a.icons.RowAdd.Text+" │") {
 		t.Errorf("filter row %q", row)
 	}
 	if f.Cursor == nil || f.Cursor.Y != 1 {
@@ -696,14 +696,15 @@ func batchMsgs(cmd tea.Cmd) []tea.Msg {
 	if cmd == nil {
 		return nil
 	}
-	if b, ok := cmd().(tea.BatchMsg); ok {
+	m := cmd() // once: a Tick's timer fires once, a second call waits for ever
+	if b, ok := m.(tea.BatchMsg); ok {
 		var out []tea.Msg
 		for _, c := range b {
 			out = append(out, batchMsgs(c)...)
 		}
 		return out
 	}
-	return []tea.Msg{cmd()}
+	return []tea.Msg{m}
 }
 
 // With a filter kept, esc in the tree is /: back in the input, the text as it was and

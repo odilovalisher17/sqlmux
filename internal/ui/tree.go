@@ -95,7 +95,14 @@ func (t Tree) Draw(f *Frame, in uv.Rectangle) uv.Position {
 		addSt.Bg = th.Select
 	}
 	f.Text(addX, y, right, add.Text, addSt)
-	hdr := addX - 1 // the header row ends before the button
+	re := t.Icons.Refresh // before it: every connection's catalog read again, as DBeaver's refresh
+	reX := addX - 1 - Width(re.Text)
+	reSt := re.On(info)
+	if f.Region(uv.Rect(reX, y, Width(re.Text), 1), Target{Kind: KindButton, Pane: t.Pane, Action: "tree.refresh.all"}) {
+		reSt.Bg = th.Select
+	}
+	f.Text(reX, y, addX, re.Text, reSt)
+	hdr := reX - 1 // the header row ends before the buttons
 	if t.Filtering || t.Filter.Text != "" {
 		count := fmt.Sprintf("%d/%d", t.Matches, t.Total)
 		cx := hdr - Width(count)

@@ -1,5 +1,5 @@
 ┌─ ⟨0⟩ @ doraemon ───────── « ─┐ ┌─ ⟨1⟩ ─────────────────────────────────────────── | = [Z] x ─┐ ┌─ ⟨2⟩ > query · qu…  doraemon · doraemon.public ▾  ▶ run  ↵ ─┐
-│ ? / 15 tables              + │ │                                                             │ │▶  1 select 1;                                               │
+│ ? / 15 tables          [R] + │ │                                                             │ │▶  1 select 1;                                               │
 │──────────────────────────────│ │                                                             │ │▶  2 select * from t_o                                       │
 │ ▾ pg doraemon                │ │                                                             │ │                   ┌──────────────────────┐                  │
 │   ▸ # agentable              │ │                                                             │ │                   │ + t_order         表 │                  │
